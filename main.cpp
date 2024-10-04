@@ -1307,7 +1307,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
 			ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 			//ImGui::SliderFloat("MonsterBallsc", &w, 0.1f, 2.0f);
-			//ImGui::Checkbox("useMonsterball", &useMonsterBall);
+			ImGui::Checkbox("useMonsterball", &useMonsterBall);
 			//transformSprite.scale, transformSprite.rotate, transformSprite.translate
 			ImGui::DragFloat3("UVTransScale", &transformSprite.scale.x, 0.1f);
 			ImGui::DragFloat3("UVTransRotate", &transformSprite.rotate.x, 0.1f);
@@ -1374,6 +1374,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResorce->GetGPUVirtualAddress());
 			//描画
+			
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 			//commandList->DrawInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0);
 
@@ -1385,7 +1386,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);// IBVを設定//06_00
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			// 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
-			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);//06_00
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);//06_00
 
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			//実際のcommandListのImGuiの描画コマンドを積む
