@@ -1004,7 +1004,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	modelData.vertices.push_back({ .position = {1.0f,-1.0f,0.0f,1.0f},.texcoord = {0.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {-1.0f,1.0f,0.0f,1.0f},.texcoord = {1.0f,0.0f},.normal = {0.0f,0.0f,1.0f} });
 	modelData.vertices.push_back({ .position = {-1.0f,-1.0f,0.0f,1.0f},.texcoord = {1.0f,1.0f},.normal = {0.0f,0.0f,1.0f} });
-	modelData.material.textureFilePath = "./resources/uvChecker.png"
+	modelData.material.textureFilePath = "./resources/uvChecker.png";
 	
 	//頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
@@ -1091,17 +1091,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 1枚目の三角形
 	vertexDataSprite[0].position = { 0.0f, 360.0f, 0.0f, 1.0f };// 左下
 	vertexDataSprite[0].texcoord = { 0.0f, 1.0f };
-	vertexDataSprite[0].nomal = { 0.0f, 0.0f, -1.0f };
+	vertexDataSprite[0].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[1].position = { 0.0f, 0.0f, 0.0f, 1.0f };// 左上
 	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
-	vertexDataSprite[1].nomal = { 0.0f, 0.0f, -1.0f };
+	vertexDataSprite[1].normal = { 0.0f, 0.0f, -1.0f };
 	vertexDataSprite[2].position = { 640.0f, 360.0f, 0.0f, 1.0f };// 右下
 	vertexDataSprite[2].texcoord = { 1.0f, 1.0f };
-	vertexDataSprite[2].nomal = { 0.0f, 0.0f, -1.0f };
+	vertexDataSprite[2].normal = { 0.0f, 0.0f, -1.0f };
 	// 2枚目の三角形
 	vertexDataSprite[3].position = { 640.0f, 0.0f, 0.0f, 1.0f };// 右上
 	vertexDataSprite[3].texcoord = { 1.0f, 0.0f };
-	vertexDataSprite[3].nomal = { 0.0f, 0.0f, -1.0f };
+	vertexDataSprite[3].normal = { 0.0f, 0.0f, -1.0f };
 
 	D3D12_VIEWPORT viewport{};
 
@@ -1274,6 +1274,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	ImGui::StyleColorsDark();
 
+	int instancing = 10;
+
 	while (msg.message != WM_QUIT) {
 
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1392,8 +1394,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResorce->GetGPUVirtualAddress());
 			//描画
-			
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
+			for (size_t i = 0; i < 2; i++)
+			{
+				commandList->DrawInstanced(UINT(modelData.vertices.size()), instancing, 0, 0);
+
+			}
 			//commandList->DrawInstanced(kSubdivision* kSubdivision * 6, 1, 0, 0);
 
 			// Spriteの描画。変更が必要なものだけ変更する
