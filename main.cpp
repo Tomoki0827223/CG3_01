@@ -985,8 +985,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 
 	//モデル読み込み
-	ModelData modelData = LoaObjFile("resources", "Bunny.obj");
-	//ModelData modelData = LoaObjFile("resources", "plane.obj");
+	//ModelData modelData = LoaObjFile("resources", "Bunny.obj");
+	ModelData modelData = LoaObjFile("resources", "plane.obj");
 	
 	//頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
