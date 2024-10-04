@@ -14,6 +14,7 @@
 #include <sstream>
 #include <wrl.h>
 
+
 #include "externals/DirectXTex/DirectXTex.h"
 
 #include "Vector4.h"
