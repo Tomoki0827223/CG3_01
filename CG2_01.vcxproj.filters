@@ -50,6 +50,9 @@
     <FxCompile Include="Object3d.VS.hlsl" />
     <FxCompile Include="Object3d.PS.hlsl" />
     <FxCompile Include="Object3d.hlsl" />
+    <FxCompile Include="Particle.VS.hlsl" />
+    <FxCompile Include="Partcle.PS.hlsl" />
+    <FxCompile Include="Particle.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector4.h">
