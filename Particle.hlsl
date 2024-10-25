@@ -1,4 +1,6 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+struct VertexShanderOutput
 {
-	return pos;
-}
+    float32_t4 position : SV_POSITION;
+    float32_t2 texcoord : TEXCOORD0;
+    float32_t3 normal : NORMAL0;
+};
