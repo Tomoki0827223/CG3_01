@@ -25,7 +25,7 @@ Texture2D<float4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
-PixelShaderOutput main(VertexShaderOutput input)
+PixelShaderOutput main(VertexShanderOutput input)
 {
     // UV変換行列を使ってテクスチャ座標を変換
     float4 transformedUV = mul(float4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
