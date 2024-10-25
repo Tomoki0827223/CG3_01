@@ -987,7 +987,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->endleLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
 
-	
+	const uint32_t kNumInstance = 10;
+	//Material用のResourceを作る
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(TransformationMatrix) * kNumInstance);
+	TransformationMatrix* instancingData = nullptr;
+	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
+	////こここで色かえられるよ
+	for (uint32_t index = 0; index < kNumInstance; index++)
+	{
+		instancingData[index].WVP = MakeIdentity4x4();
+		instancingData[index].world = MakeIdentity4x4();
+	}
+
+	//TransformVector3 transforms[kNumInstance];
+	//for (uint32_t index = 0; index < kNumInstance; index++)
+	//{
+	//	transforms[index].scale = { 1.0f,1.0f,1.0f };
+	//	transforms[index].rotate = { 0.0f,0.0f,0.0f };
+	//	transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+	//}
 
 
 	bool useMonsterBall = false;
