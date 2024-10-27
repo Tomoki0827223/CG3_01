@@ -946,9 +946,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPinpelineStateDesc{};
 	graphicsPinpelineStateDesc.pRootSignature = rootSignature.Get();
 	graphicsPinpelineStateDesc.InputLayout = inputLayoutDesc;
-	graphicsPinpelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
-		vertexShaderBlob->GetBufferSize() };
-	graphicsPinpelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };
+	/*graphicsPinpelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),*/
+	graphicsPinpelineStateDesc.VS = { vertexParticleShaderBlob->GetBufferPointer(),
+		vertexParticleShaderBlob->GetBufferSize() };
+		vertexShaderBlob->GetBufferSize();
+	graphicsPinpelineStateDesc.PS = { pixelShaderParticleBlob->GetBufferPointer(),pixelShaderParticleBlob->GetBufferSize() };
 	graphicsPinpelineStateDesc.BlendState = blendDesc;
 	graphicsPinpelineStateDesc.RasterizerState = rasterizerDesc;
 
@@ -1328,16 +1330,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
 			commandList->SetPipelineState(graphicsPipelineState.Get());
 
-			////Sphere
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-			////形状を設定。PSOに設定しているものとはまた別、同じものを設定すると考えておけば良い
-			//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			////wvp用のCBufferの場所を設定
+			//Sphere
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+			//形状を設定。PSOに設定しているものとはまた別、同じものを設定すると考えておけば良い
+			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			//wvp用のCBufferの場所を設定
 			//commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResorce->GetGPUVirtualAddress());
-			////描画
+			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResorce->GetGPUVirtualAddress());
 
 			// 他の設定諸々
 			// instancing用のDataを読むためにStructured Buffer SRVを設定する
@@ -1346,13 +1347,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画! 6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 
-			// Spriteの描画。変更が必要なものだけ変更する
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			// TransformationMatrixCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);// IBVを設定//06_00
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			//// Spriteの描画。変更が必要なものだけ変更する
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+			//// TransformationMatrixCBufferの場所を設定
+			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			//commandList->IASetIndexBuffer(&indexBufferViewSprite);// IBVを設定//06_00
+			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			// 描画！（DrawCall/ドローコール）6個のインデックスを使用し1つのインスタンスを描画。その他は当面0で良い
 			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);//06_00
 
