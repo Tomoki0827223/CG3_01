@@ -16,16 +16,16 @@ struct VertexShaderInput
     float3 normal : NORMAL0;
 };
 
-struct VertexShaderOutput
-{
-    float4 position : SV_POSITION;
-    float2 texcoord : TEXCOORD0;
-    float3 normal : NORMAL0;
-};
+//struct VertexShaderOutput
+//{
+//    float4 position : SV_POSITION;
+//    float2 texcoord : TEXCOORD0;
+//    float3 normal : NORMAL0;
+//};
 
-VertexShaderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
+VertexShanderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
-    VertexShaderOutput output;
+    VertexShanderOutput output;
 
     // InstanceIDを使ってインスタンスごとのWVPとWorld行列を取得
     output.position = mul(input.position, gTransformationMatrices[instanceId].WVP);
