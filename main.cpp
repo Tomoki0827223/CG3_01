@@ -69,6 +69,12 @@ struct Material
 	Matrix4x4 uvTransform;
 };
 
+struct Particle
+{
+	TransformVector3 transform;
+	Vector3 velocity;
+};
+
 struct TransformationMatrix
 {
 	Matrix4x4 WVP;
@@ -1002,13 +1008,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		instancingData[index].world = MakeIdentity4x4();
 	}
 
-	TransformVector3 transforms[kNumInstance];
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; index++)
 	{
-		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 0.0f,0.0f,0.0f };
-		transforms[index].translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
+		particles[index].transform.rotate = { 0.0f,0.0f,0.0f };
+		particles[index].transform.translate = { index * 0.1f,index * 0.1f,index * 0.1f };
+
+		particles[index].velocity = { 0.1f,1.0f,0.0f };
 	}
+	const float kDeltaTime = 1.0f / 60.0f;
 
 
 	bool useMonsterBall = false;
@@ -1251,7 +1260,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
 
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-				Matrix4x4 worldMatrix = MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translate);
+				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				instancingData[index].WVP = worldViewProjectionMatrix,
 				instancingData[index].world = worldMatrix;
