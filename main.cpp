@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <wrl.h>
+#include <random>
 
 
 #include "externals/DirectXTex/DirectXTex.h"
@@ -1009,6 +1010,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	Particle particles[kNumInstance];
+
+	std::random_device seedGenerator;
+	std::mt19937 randomEngine(seedGenerator());
+
 	for (uint32_t index = 0; index < kNumInstance; index++)
 	{
 		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
@@ -1016,6 +1021,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles[index].transform.translate = { index * 0.1f,index * 0.1f,index * 0.1f };
 
 		particles[index].velocity = { 0.1f,1.0f,0.0f };
+
+		std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+		//位置と速度を[-1,1]でランダムに初期化
+		particles[index].transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+		particles[index].velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	}
 	const float kDeltaTime = 1.0f / 60.0f;
 
