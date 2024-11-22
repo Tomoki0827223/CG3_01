@@ -1,18 +1,19 @@
 #include "Object3d.hlsl"
 
-struct TransformationMatrix
+struct ParticleForGPU
 {
     float32_t4x4 WVP;
     float32_t4x4 world;
+    float32_t4 color;
 
 };
-ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
+ConstantBuffer<ParticleForGPU> gParticle : register(b0);
 
 struct VertexShaderInput
 {
     float32_t4 position : POSITION0;
     float32_t2 texcoord : TEXCOORD0;
-    float32_t3 normal : NORMAL0;
+    float32_t4 color : COLOR0;
 };
 
 struct Material
@@ -26,9 +27,9 @@ VertexShanderOutput main(VertexShaderInput input)
 {
   
     VertexShanderOutput output;
-    output.position = mul(input.position, gTransformationMatrix.WVP);
+    output.position = mul(input.position, gParticle.WVP);
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float32_t3x3) gTransformationMatrix.world));
+    output.color = gParticle[InstanceID].color;
     
     return output;
 };
