@@ -966,7 +966,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 
 	//裏面表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -1061,16 +1061,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//bool useUpdate = false;
 	bool useMonsterBall = false;
-	
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	TransformVector3 transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-
-	//Resourcef
-	//const uint32_t kSubdivision = 36;
-
-	//VertexResourceを生成
-	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 
 	//モデル読み込み
 	//ModelData modelData = LoaObjFile("resources", "Bunny.obj");
@@ -1189,10 +1182,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 
+	TransformVector3 cameraTransform{
+
+		{1.0f, 1.0f, 1.0f},
+		{std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f},
+		{0.0f, 23.0f, 10.0f}
+	};
 
 	TransformVector3 transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	TransformVector3 cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+	Matrix4x4 backToFontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+
 
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -1253,6 +1255,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVの生成
 	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
+	TransformVector3 cameraTransform{
+
+		{1.0f, 1.0f, 1.0f},
+		{std::numbers::pi_v<float> / 3.0f, std::numbers::pi_v<float>, 0.0f},
+		{0.0f, 23.0f, 10.0f}
+	};
+
+
 	MSG msg{};
 
 	//ImGuiの初期化
@@ -1278,8 +1288,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			transform.rotate.y += 0.0f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+			worldMatrix = scalema
+
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+
+			Matrix4x4 billboardMatrix = Multiply(backToFontMatrix, cameraMatrix);
+
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientwidth) / float(kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			wvpDeta->world = worldMatrix;
