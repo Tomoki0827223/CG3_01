@@ -559,9 +559,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
-	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distribution(-0.2f, 0.2f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
+	std::uniform_real_distribution<float> destTime(1.0f, 8.0f);
 	
 	Particle particle;
 	
@@ -947,10 +947,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = true;
 	
-	//通常
+	////通常
+	//blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	//blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	//blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+
+	//加算
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
 	
 
 	//変更しないもの
@@ -980,7 +985,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ここから03_01
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
 	depthStencilDesc.DepthEnable = true;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 	//ここから03_01
 
@@ -1031,13 +1036,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->endleLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
 
-	const uint32_t kNumMaxInstance = 10;
+	//パーティクル最大数
+	const uint32_t kNumMaxInstance = 50;
+	
+	
 	//Material用のResourceを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 	ParticleForGPU* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	////こここで色かえられるよ
-
 
 	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
@@ -1302,6 +1309,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 
 				// ワールド行列を作成
+
+				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
@@ -1317,6 +1327,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				instancingData[numInstance].WVP = worldViewProjectionMatrix; 
 				instancingData[numInstance].world = worldMatrix;
 				instancingData[numInstance].color = particles[index].color;
+				instancingData[numInstance].color.w = alpha;
 				
 				++numInstance; // 生きているParticleの数を1つカウントする
 
