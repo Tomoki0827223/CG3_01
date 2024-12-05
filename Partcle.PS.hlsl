@@ -38,6 +38,7 @@ PixelShaderOutput main(VertexShanderOutput input)
         // 照明計算（法線と光源方向の内積を用いた簡易ライティング）
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f); // コサイン補正
+        output.color = gMaterial.color * textureColor * input.color;
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
         output.color.a = gMaterial.color.a * textureColor.a;
     }

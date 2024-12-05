@@ -1,13 +1,15 @@
 #include "Particle.hlsl"
 
-struct TransformationMatrix
+struct ParticleForGPU
 {
-    float4x4 WVP;
-    float4x4 world;
+    float32_t4x4 WVP;
+    float32_t4x4 world;
+    float32_t4 color;
 };
 
+
 // StructuredBufferにインスタンスごとの行列を格納
-StructuredBuffer<TransformationMatrix> gTransformationMatrices : register(t0);
+StructuredBuffer<ParticleForGPU> gParticle : register(t0);
 
 struct VertexShaderInput
 {
@@ -16,21 +18,16 @@ struct VertexShaderInput
     float3 normal : NORMAL0;
 };
 
-//struct VertexShaderOutput
-//{
-//    float4 position : SV_POSITION;
-//    float2 texcoord : TEXCOORD0;
-//    float3 normal : NORMAL0;
-//};
 
 VertexShanderOutput main(VertexShaderInput input, uint32_t instanceId : SV_InstanceID)
 {
     VertexShanderOutput output;
 
     // InstanceIDを使ってインスタンスごとのWVPとWorld行列を取得
-    output.position = mul(input.position, gTransformationMatrices[instanceId].WVP);
+    output.position = mul(input.position, gParticle[instanceId].WVP);
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float3x3) gTransformationMatrices[instanceId].world));
+    output.color = gParticle[instanceId].color;
+    output.normal = normalize(mul(input.normal, (float3x3) gParticle[instanceId].world));
 
     return output;
 }
