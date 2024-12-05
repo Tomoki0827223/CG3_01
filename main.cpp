@@ -1039,9 +1039,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	////こここで色かえられるよ
 
 
-	uint32_t numInstance = 0; // 描画すべきインスタンス数
-
-
 	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
 		instancingData[index].WVP = MakeIdentity4x4();
@@ -1055,7 +1052,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles[index] = MakeNewParticle(randomEngine);
 	}
 
-	bool useUpdate = false;
+	//bool useUpdate = false;
 	bool useMonsterBall = false;
 	
 	const float kDeltaTime = 1.0f / 60.0f;
@@ -1297,6 +1294,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
+			uint32_t numInstance = 0; // 描画すべきインスタンス数
 
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 				if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
@@ -1324,13 +1322,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
                 particles[index].transform.translate += Vector3(particles[index].velocity.x * kDeltaTime, particles[index].velocity.y * kDeltaTime, particles[index].velocity.z * kDeltaTime);
 
-				if (useUpdate) {
-                    particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-                    particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-                    particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-					
-					particles[index].currentTime += kDeltaTime;// 経過時間を足す
-				}
 			}
 
 			//これから書き込むバッファのインデックスを取得
@@ -1350,35 +1341,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 			//ImGui::SliderFloat("MonsterBallsc", &w, 0.1f, 2.0f);
 			ImGui::Checkbox("useMonsterball", &useMonsterBall);
-			ImGui::Checkbox("Update", &useUpdate);
-			//transformSprite.scale, transformSprite.rotate, transformSprite.translate
-			//ImGui::DragFloat3("UVTransScale", &transformSprite.scale.x, 0.1f);
-			//ImGui::DragFloat3("UVTransRotate", &transformSprite.rotate.x, 0.1f);
-			//ImGui::DragFloat3("UVTransTranslate", &transformSprite.translate.x);
-
-			//ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			//ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			//ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-
-			//directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
-			//directionalLightData->direction = { 0.0f,-1.0f,0.0f };
-			//directionalLightData->intensity = 1.0f;
 
 			ImGui::End();
-
 			ImGui::Render();
 
 
 			D3D12_RESOURCE_BARRIER barrier{};
 
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
 			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
 			barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
 
@@ -1422,7 +1395,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			// 他の設定諸々
 			//描画! 6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), numInstance, 0, 0);
 
 			//// Spriteの描画。変更が必要なものだけ変更する
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
