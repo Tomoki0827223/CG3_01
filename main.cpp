@@ -75,7 +75,8 @@ struct Particle
 	TransformVector3 transform;
 	Vector3 velocity;
 	Vector4 color;
-
+	float lifeTime;
+	float currentTime;
 };
 
 struct ParticleForGPU
@@ -560,6 +561,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine)
 {
 	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
+	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
 	
 	Particle particle;
 	
@@ -568,7 +570,9 @@ Particle MakeNewParticle(std::mt19937& randomEngine)
 	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
 	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
-	
+	particle.lifeTime = destTime(randomEngine);
+	particle.currentTime = 0.0f;
+
 	return particle;
 }
 
@@ -1027,26 +1031,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->endleLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
 
-	const uint32_t kNumInstance = 10;
+	const uint32_t kNumMaxInstance = 10;
 	//Material用のResourceを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumInstance);
+	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = CreateBufferResource(device, sizeof(ParticleForGPU) * kNumMaxInstance);
 	ParticleForGPU* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
 	////こここで色かえられるよ
-	for (uint32_t index = 0; index < kNumInstance; index++)
+
+
+	uint32_t numInstance = 0; // 描画すべきインスタンス数
+
+
+	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
 		instancingData[index].WVP = MakeIdentity4x4();
 		instancingData[index].world = MakeIdentity4x4();
 		instancingData[index].color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	}
 
-	Particle particles[kNumInstance];
-	for (uint32_t index = 0; index < kNumInstance; index++)
+	Particle particles[kNumMaxInstance];
+	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
 		particles[index] = MakeNewParticle(randomEngine);
 	}
 
+	bool useUpdate = false;
 	bool useMonsterBall = false;
+	
+	const float kDeltaTime = 1.0f / 60.0f;
+
 	TransformVector3 transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
 	//Resourcef
@@ -1202,7 +1215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	instancingSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	instancingSrvDesc.Buffer.FirstElement = 0;
 	instancingSrvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	instancingSrvDesc.Buffer.NumElements = kNumInstance;
+	instancingSrvDesc.Buffer.NumElements = kNumMaxInstance;
 	instancingSrvDesc.Buffer.StructureByteStride = sizeof(ParticleForGPU);
 
 	//SRVを作成するDescriptorHeapの場所を決める
@@ -1284,16 +1297,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
 
-			for (uint32_t index = 0; index < kNumInstance; ++index) {
+			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+				if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
+					continue;
+				}
 
+				// ワールド行列を作成
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-				instancingData[index].WVP = worldViewProjectionMatrix,
-				instancingData[index].world = worldMatrix;
-				instancingData[index].color = particles[index].color;
+				//instancingData[index].WVP = worldViewProjectionMatrix,
+				//instancingData[index].world = worldMatrix;
+				//instancingData[index].color = particles[index].color;
+				
+				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
+				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				particles[index].currentTime += kDeltaTime; // 経過時間を足す
+				
+				instancingData[numInstance].WVP = worldViewProjectionMatrix; 
+				instancingData[numInstance].world = worldMatrix;
+				instancingData[numInstance].color = particles[index].color;
+				
+				++numInstance; // 生きているParticleの数を1つカウントする
 
-				particles[index].transform.translate = particles[index].velocity;
+                particles[index].transform.translate += Vector3(particles[index].velocity.x * kDeltaTime, particles[index].velocity.y * kDeltaTime, particles[index].velocity.z * kDeltaTime);
+
+				if (useUpdate) {
+                    particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+                    particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
+                    particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+					
+					particles[index].currentTime += kDeltaTime;// 経過時間を足す
+				}
 			}
 
 			//これから書き込むバッファのインデックスを取得
@@ -1308,19 +1344,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Ball Controls");
-			ImGui::SliderFloat3("Position", &transform.translate.x, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
-			ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
+			ImGui::SliderFloat3("ParticleX", &particles->transform.rotate.x, -5.0f, 5.0f);
+			ImGui::SliderFloat3("ParticleY", &particles->transform.rotate.y, -180.0f, 180.0f);
+			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 			//ImGui::SliderFloat("MonsterBallsc", &w, 0.1f, 2.0f);
 			ImGui::Checkbox("useMonsterball", &useMonsterBall);
+			ImGui::Checkbox("Update", &useUpdate);
 			//transformSprite.scale, transformSprite.rotate, transformSprite.translate
-			ImGui::DragFloat3("UVTransScale", &transformSprite.scale.x, 0.1f);
-			ImGui::DragFloat3("UVTransRotate", &transformSprite.rotate.x, 0.1f);
-			ImGui::DragFloat3("UVTransTranslate", &transformSprite.translate.x);
+			//ImGui::DragFloat3("UVTransScale", &transformSprite.scale.x, 0.1f);
+			//ImGui::DragFloat3("UVTransRotate", &transformSprite.rotate.x, 0.1f);
+			//ImGui::DragFloat3("UVTransTranslate", &transformSprite.translate.x);
 
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+			//ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			//ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			//ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
 			//directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 			//directionalLightData->direction = { 0.0f,-1.0f,0.0f };
@@ -1384,7 +1421,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			// 他の設定諸々
 			//描画! 6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumMaxInstance, 0, 0);
 
 			//// Spriteの描画。変更が必要なものだけ変更する
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite); // VBVを設定
