@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="imgui">
+    <Filter Include="ソース ファイル\imgui">
       <UniqueIdentifier>{a47a1aa4-75c6-45e5-8e38-2dc26777ffa9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -25,34 +25,44 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Object3d.VS.hlsl" />
-    <FxCompile Include="Object3d.PS.hlsl" />
-    <FxCompile Include="Object3d.hlsl" />
-    <FxCompile Include="Particle.VS.hlsl" />
-    <FxCompile Include="Partcle.PS.hlsl" />
-    <FxCompile Include="Particle.hlsl" />
+    <ClCompile Include="D3DResourceLeakChecker.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUitilty.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApp.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector4.h">
@@ -65,28 +75,28 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imconfig.h">
-      <Filter>imgui</Filter>
+      <Filter>ソース ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="Vector2.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -100,11 +110,37 @@
     <ClInclude Include="Matrix3x3.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="D3DResourceLeakChecker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUitilty.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApp.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="resources\shaders\Object3d.hlsl" />
+    <FxCompile Include="resources\shaders\Object3d.PS.hlsl" />
+    <FxCompile Include="resources\shaders\Object3d.VS.hlsl" />
+    <FxCompile Include="resources\shaders\Partcle.PS.hlsl" />
+    <FxCompile Include="resources\shaders\Particle.hlsl" />
+    <FxCompile Include="resources\shaders\Particle.VS.hlsl" />
   </ItemGroup>
 </Project>
