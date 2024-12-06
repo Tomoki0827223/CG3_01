@@ -665,6 +665,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->InitializeImGui();
 
 
+
 	while (true)
 	{
 		if (winApp_->ProsessMeassage())
