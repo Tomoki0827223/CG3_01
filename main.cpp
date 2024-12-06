@@ -477,10 +477,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		instancingData[index].color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	}
 
-	Particle particles[kNumMaxInstance];
+	std::list<Particle> particles;
 	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
-		particles[index] = MakeNewParticle(randomEngine);
+		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine));
 	}
 
 	//bool useUpdate = false;
@@ -709,36 +711,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			uint32_t numInstance = 0; // 描画すべきインスタンス数
 
-			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-				if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
+			for (std::list<Particle>::iterator particleIterator = particles.begin(); particleIterator != particles.end();) {
+				if ((*particleIterator).lifeTime <= (*particleIterator).currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
+					particleIterator = particles.erase(particleIterator);
 					continue;
 				}
 
 				// ワールド行列を作成
 
-				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+				float alpha = 1.0f - ((*particleIterator).currentTime / (*particleIterator).lifeTime);
 
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+				Matrix4x4 worldMatrix = MakeAffineMatrix((*particleIterator).transform.scale, (*particleIterator).transform.rotate, (*particleIterator).transform.translate);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-				//instancingData[index].WVP = worldViewProjectionMatrix,
-				//instancingData[index].world = worldMatrix;
-				//instancingData[index].color = particles[index].color;
-				
-				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-				particles[index].currentTime += kDeltaTime; // 経過時間を足す
-				
-				instancingData[numInstance].WVP = worldViewProjectionMatrix; 
-				instancingData[numInstance].world = worldMatrix;
-				instancingData[numInstance].color = particles[index].color;
-				instancingData[numInstance].color.w = alpha;
-				
-				++numInstance; // 生きているParticleの数を1つカウントする
 
-                particles[index].transform.translate += Vector3(particles[index].velocity.x * kDeltaTime, particles[index].velocity.y * kDeltaTime, particles[index].velocity.z * kDeltaTime);
+				(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
+				(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
+				(*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;
+				(*particleIterator).currentTime += kDeltaTime; // 経過時間を足す
 
+				if (numInstance<kNumMaxInstance)
+				{
+					instancingData[numInstance].WVP = worldViewProjectionMatrix;
+					instancingData[numInstance].world = worldMatrix;
+					instancingData[numInstance].color = (*particleIterator).color;
+					instancingData[numInstance].color.w = alpha;
+
+					++numInstance; // 生きているParticleの数を1つカウントする
+				}
+
+
+				++particleIterator;
 			}
 
 
@@ -751,8 +754,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Ball Controls");
-			ImGui::SliderFloat3("ParticleX", &particles->transform.rotate.x, -5.0f, 5.0f);
-			ImGui::SliderFloat3("ParticleY", &particles->transform.rotate.y, -180.0f, 180.0f);
+
+			if (ImGui::Button("Add Particle")) {
+				particles.push_back(MakeNewParticle(randomEngine));
+				particles.push_back(MakeNewParticle(randomEngine));
+				particles.push_back(MakeNewParticle(randomEngine));
+			}
+
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 
 			ImGui::Checkbox("useUVTexture", &useMonsterBall);
