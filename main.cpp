@@ -388,19 +388,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobComPtr = dxCommon->compileShader(L"Object3D.VS.hlsl", L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0");
 	IDxcBlob* vertexShaderBlob = vertexShaderBlobComPtr.Get();
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobComPtr = dxCommon->compileShader(L"Object3D.PS.hlsl", L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0");
 	IDxcBlob* pixelShaderBlob = pixelShaderBlobComPtr.Get();
 	assert(pixelShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexParticleShaderBlobComPtr = dxCommon->compileShader(L"Particle.VS.hlsl", L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexParticleShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Particle.VS.hlsl", L"vs_6_0");
 	IDxcBlob* vertexParticleShaderBlob = vertexParticleShaderBlobComPtr.Get();
 	assert(vertexParticleShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderParticleBlobComPtr = dxCommon->compileShader(L"Particle.PS.hlsl", L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderParticleBlobComPtr = dxCommon->compileShader(L"resources/shaders/Partcle.PS.hlsl", L"ps_6_0");
 	IDxcBlob* pixelShaderParticleBlob = pixelShaderParticleBlobComPtr.Get();
 	assert(pixelShaderParticleBlob != nullptr);
 
@@ -753,11 +753,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("ParticleX", &particles->transform.rotate.x, -5.0f, 5.0f);
 			ImGui::SliderFloat3("ParticleY", &particles->transform.rotate.y, -180.0f, 180.0f);
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
-			//ImGui::SliderFloat("MonsterBallsc", &w, 0.1f, 2.0f);
+
 			ImGui::Checkbox("useMonsterball", &useMonsterBall);
 
 			ImGui::End();
+			// 他の描画処理が完了した後に ImGui 描画を行う
 			ImGui::Render();
+			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+
+
 
 			dxCommon->InitializeViewportAndScissorRect();
 			dxCommon->InitializeScissorRect();
