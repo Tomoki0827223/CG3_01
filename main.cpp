@@ -62,6 +62,18 @@ struct Particle
 	float currentTime;
 };
 
+struct Emitter
+{
+	//!< 生成するパーティクルの初期値
+	TransformVector3 transform;
+	//!<　発生数
+	uint32_t count;
+	//!< 発生速度
+	float frequency;
+	//!< 頻度用時刻
+	float frequencyTime;
+};
+
 struct ParticleForGPU
 {
 	Matrix4x4 WVP;
@@ -224,7 +236,7 @@ ModelData LoaObjFile(const std::string& directoryPath, const std::string& filena
 
 }
 
-Particle MakeNewParticle(std::mt19937& randomEngine)
+Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3&translate)
 {
 	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
@@ -240,7 +252,20 @@ Particle MakeNewParticle(std::mt19937& randomEngine)
 	particle.lifeTime = destTime(randomEngine);
 	particle.currentTime = 0.0f;
 
+	Vector3 randomTranslate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	particle.transform.translate = translate + randomTranslate;
+
 	return particle;
+}
+
+std::list<Particle> Emit(const Emitter& Emitter, std::mt19937& randomEngine)
+{
+	std::list<Particle> particles;
+	for (uint32_t count = 0; count < Emitter.count; ++count)
+	{
+		particles.push_back(MakeNewParticle(randomEngine, Emitter.transform.translate));
+	}
+	return particles;
 }
 
 
@@ -480,14 +505,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Particle particles[kNumMaxInstance];
 	std::list<Particle> particles;
+	Emitter emitter{};
+	emitter.count = 20;
+	emitter.frequency = 0.1f;
+	emitter.frequencyTime = 0.0f;
+	emitter.transform.translate = { 0.0f,0.0f,0.0f };
+	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
+	emitter.transform.scale = { 1.0f,1.0f,1.0f };
+
 	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
-		particles.push_back(MakeNewParticle(randomEngine));
-		particles.push_back(MakeNewParticle(randomEngine));
-		particles.push_back(MakeNewParticle(randomEngine));
+
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 
 	}
-
 
 	//bool useUpdate = false;
 	bool useMonsterBall = false;
@@ -773,22 +806,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				++particleIterator;
 			}
 
+			emitter.frequencyTime += kDeltaTime;
+			if (emitter.frequency <= emitter.frequencyTime) {
+				particles.splice(particles.end(), Emit(emitter, randomEngine));
+				emitter.frequencyTime -= emitter.frequency;
+			}
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-			ImGui::Begin("Color");
-			ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
-			ImGui::End();
+
+			//if (ImGui::Button("Add Particle"))
+			//{
+			//	particles.push_back(MakeNewParticle(randomEngine));
+			//	particles.push_back(MakeNewParticle(randomEngine));
+			//	particles.push_back(MakeNewParticle(randomEngine));
+			//}
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Ball Controls");
+
 			if (ImGui::Button("Add Particle"))
 			{
-				particles.push_back(MakeNewParticle(randomEngine));
-				particles.push_back(MakeNewParticle(randomEngine));
-				particles.push_back(MakeNewParticle(randomEngine));
+				particles.splice(particles.end(), Emit(emitter, randomEngine));
 			}
+			ImGui::ColorEdit4("Particle Color", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
 
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 
