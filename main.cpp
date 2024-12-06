@@ -251,24 +251,40 @@ ModelData LoaObjFile(const std::string& directoryPath, const std::string& filena
 
 }
 
-Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3&translate)
+Particle MakeNewParticle(std::mt19937& randmEngine, const Vector3& translate)
 {
-	std::uniform_real_distribution<float> distribution(-0.3f, 0.3f);
+	std::uniform_real_distribution<float> distAngle(0.0f, 2.0f * std::numbers::pi_v<float>);
+	std::uniform_real_distribution<float> distRadius(0.0f, 0.1f); // 半径の範囲を狭くする
+	std::uniform_real_distribution<float> distSpeed(0.5f, 2.0f); // 初期速度の範囲を狭くする
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
-	
-	Particle particle;
-	
-	particle.transform.scale = { 1.0f, 1.0f, 1.0f };
-	particle.transform.rotate = { 0.0f, 0.0f, 0.0f };
-	particle.transform.translate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.velocity = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
-	particle.color = { distColor(randomEngine), distColor(randomEngine), distColor(randomEngine), 1.0f };
-	particle.lifeTime = destTime(randomEngine);
-	particle.currentTime = 0.0f;
+	std::uniform_real_distribution<float> distTime(1.0f, 3.0f);
 
-	Vector3 randomTranslate = { distribution(randomEngine), distribution(randomEngine), distribution(randomEngine) };
+	float angle = distAngle(randmEngine);
+	float radius = distRadius(randmEngine);
+	float speed = distSpeed(randmEngine);
+
+	// 中心からのランダムな方向に位置を設定
+	Vector3 randomTranslate = {
+		radius * std::cos(angle),
+		radius * std::sin(angle),
+		0.0f // 2D平面上でのばらけを考慮
+	};
+
+	// 初期速度を設定
+	Vector3 initialVelocity = {
+		speed * std::cos(angle),
+		speed * std::sin(angle),
+		0.0f // 2D平面上でのばらけを考慮
+	};
+
+	Particle particle;
+	particle.transform.scale = { 0.5f, 0.5f, 0.5f };
+	particle.transform.rotate = { 0.0f, 3.1f, 0.0f };
 	particle.transform.translate = translate + randomTranslate;
+	particle.velocity = initialVelocity; // 初期速度を設定
+	particle.color = { distColor(randmEngine), distColor(randmEngine), distColor(randmEngine), 1.0f };
+	particle.lifeTime = distTime(randmEngine);
+	particle.currentTime = 1.0f; // 初期時間を1.0fに設定
 
 	return particle;
 }
@@ -528,22 +544,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
 	emitter.transform.scale = { 1.0f,1.0f,1.0f };
 
-	for (uint32_t index = 0; index < kNumMaxInstance; index++)
-	{
-
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
-
-	}
-
 	AcclerationField acclerationField;
 	acclerationField.accleration = { 0.0f,0.0f,0.0f };
 	acclerationField.area.min = { -1.0f,-1.0f,-1.0f };
@@ -783,8 +783,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			billboardMatrix.m[3][1] = 0.0f;
 			billboardMatrix.m[3][2] = 0.0f;
 
-
-
 			for (auto particleIterator = particles.begin(); particleIterator != particles.end();) {
 				// パーティクルのデータ取得
 				Particle& particle = *particleIterator;
@@ -799,15 +797,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					particle.transform.rotate,
 					particle.transform.translate
 				);
-				
+
 				// Fieldの範囲内にいるか確認
-				if (IsCollision(acclerationField.area,(*particleIterator).transform.translate))
-				{
-					(*particleIterator).velocity += acclerationField.accleration * kDeltaTime;
+				if (IsCollision(acclerationField.area, particle.transform.translate)) {
+					particle.velocity += acclerationField.accleration * kDeltaTime;
 				}
 
 				// 速度を適用
-				(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
+				particle.transform.translate += particle.velocity * kDeltaTime;
 
 				// パーティクルの寿命確認
 				if (useBillboard) {
@@ -829,7 +826,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				float alpha = 1.0f - (particle.currentTime / particle.lifeTime);
 
 				// パーティクルの更新
-				particle.transform.translate += particle.velocity * kDeltaTime;
 				particle.currentTime += kDeltaTime;
 
 				// インスタンシングデータの設定
@@ -850,6 +846,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				particles.splice(particles.end(), Emit(emitter, randomEngine));
 				emitter.frequencyTime -= emitter.frequency;
 			}
+
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
@@ -877,7 +874,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Checkbox("Billboard", &useBillboard);
 
 			// 風の有効/無効を切り替えるチェックボックス
-			ImGui::Checkbox("Enable Wind", &useWind);
+			//ImGui::Checkbox("Enable Wind", &useWind);
 
 			// 風の加速度を調整するスライダー
 			ImGui::DragFloat3("Wind Acceleration", &acclerationField.accleration.x, 0.1f, -10.0f, 10.0f);
