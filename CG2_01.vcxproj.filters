@@ -136,11 +136,11 @@
     <Text Include="externals\imgui\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\shaders\Object3d.hlsl" />
-    <FxCompile Include="resources\shaders\Object3d.PS.hlsl" />
-    <FxCompile Include="resources\shaders\Object3d.VS.hlsl" />
-    <FxCompile Include="resources\shaders\Partcle.PS.hlsl" />
-    <FxCompile Include="resources\shaders\Particle.hlsl" />
-    <FxCompile Include="resources\shaders\Particle.VS.hlsl" />
+    <FxCompile Include="Object3d.hlsl" />
+    <FxCompile Include="Object3d.PS.hlsl" />
+    <FxCompile Include="Object3d.VS.hlsl" />
+    <FxCompile Include="Partcle.PS.hlsl" />
+    <FxCompile Include="Particle.hlsl" />
+    <FxCompile Include="Particle.VS.hlsl" />
   </ItemGroup>
 </Project>

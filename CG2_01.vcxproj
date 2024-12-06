@@ -62,22 +62,22 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="resources\shaders\Object3d.hlsl">
+    <FxCompile Include="Object3d.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Object3d.PS.hlsl">
+    <FxCompile Include="Object3d.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Object3d.VS.hlsl">
+    <FxCompile Include="Object3d.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Partcle.PS.hlsl">
+    <FxCompile Include="Partcle.PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Particle.hlsl">
+    <FxCompile Include="Particle.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="resources\shaders\Particle.VS.hlsl">
+    <FxCompile Include="Particle.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>

@@ -388,19 +388,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlobComPtr = dxCommon->compileShader(L"Object3D.VS.hlsl", L"vs_6_0");
 	IDxcBlob* vertexShaderBlob = vertexShaderBlobComPtr.Get();
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlobComPtr = dxCommon->compileShader(L"Object3D.PS.hlsl", L"ps_6_0");
 	IDxcBlob* pixelShaderBlob = pixelShaderBlobComPtr.Get();
 	assert(pixelShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexParticleShaderBlobComPtr = dxCommon->compileShader(L"resources/shaders/Particle.VS.hlsl", L"vs_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexParticleShaderBlobComPtr = dxCommon->compileShader(L"Particle.VS.hlsl", L"vs_6_0");
 	IDxcBlob* vertexParticleShaderBlob = vertexParticleShaderBlobComPtr.Get();
 	assert(vertexParticleShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderParticleBlobComPtr = dxCommon->compileShader(L"resources/shaders/Particle.PS.hlsl", L"ps_6_0");
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderParticleBlobComPtr = dxCommon->compileShader(L"Particle.PS.hlsl", L"ps_6_0");
 	IDxcBlob* pixelShaderParticleBlob = pixelShaderParticleBlobComPtr.Get();
 	assert(pixelShaderParticleBlob != nullptr);
 
