@@ -81,6 +81,21 @@ struct ParticleForGPU
 	Vector4 color;
 };
 
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+};
+
+struct AcclerationField
+{
+	Vector3 accleration;
+	AABB area;
+};
+
+
+bool IsCollision(const AABB& aabb, const Vector3& point) {
+	return (aabb.min.x <= point.x && aabb.max.x >= point.x) && (aabb.min.y <= point.y && aabb.max.y >= point.y) && (aabb.min.z <= point.z && aabb.max.z >= point.z);
+}
 
 std::random_device seedGenerator;
 std::mt19937 randomEngine(seedGenerator());
@@ -238,7 +253,7 @@ ModelData LoaObjFile(const std::string& directoryPath, const std::string& filena
 
 Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3&translate)
 {
-	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> distribution(-0.3f, 0.3f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
 	
@@ -487,7 +502,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->uvTransform = MakeIdentity4x4();
 
 	//パーティクル最大数
-	const uint32_t kNumMaxInstance = 50;
+	const uint32_t kNumMaxInstance = 200;
 
 
 	//Material用のResourceを作る
@@ -519,10 +534,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
+		particles.push_back(MakeNewParticle(randomEngine, emitter.transform.translate));
 
 	}
 
+	AcclerationField acclerationField;
+	acclerationField.accleration = { 0.0f,0.0f,0.0f };
+	acclerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	acclerationField.area.max = { 1.0f,1.0f,1.0f };
+
 	//bool useUpdate = false;
+
+	bool useWind = true; // 風を使用するかどうかのフラグ
 	bool useMonsterBall = false;
 
 	const float kDeltaTime = 1.0f / 60.0f;
@@ -770,7 +799,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					particle.transform.rotate,
 					particle.transform.translate
 				);
+				
+				// Fieldの範囲内にいるか確認
+				if (IsCollision(acclerationField.area,(*particleIterator).transform.translate))
+				{
+					(*particleIterator).velocity += acclerationField.accleration * kDeltaTime;
+				}
 
+				// 速度を適用
+				(*particleIterator).transform.translate += (*particleIterator).velocity * kDeltaTime;
+
+				// パーティクルの寿命確認
 				if (useBillboard) {
 					worldMatrix2 = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
 				}
@@ -834,10 +873,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
 
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
-
 			ImGui::Checkbox("useUVTexture", &useMonsterBall);
-
 			ImGui::Checkbox("Billboard", &useBillboard);
+
+			// 風の有効/無効を切り替えるチェックボックス
+			ImGui::Checkbox("Enable Wind", &useWind);
+
+			// 風の加速度を調整するスライダー
+			ImGui::DragFloat3("Wind Acceleration", &acclerationField.accleration.x, 0.1f, -10.0f, 10.0f);
+
+			// ボタンで風の強さを変更
+			if (ImGui::Button("+accleration")) {
+				acclerationField.accleration.x += 2.0f;
+			}
+			if (ImGui::Button("-accleration")) {
+				acclerationField.accleration.x -= 2.0f;
+			}
 
 			ImGui::End();
 			// 他の描画処理が完了した後に ImGui 描画を行う
