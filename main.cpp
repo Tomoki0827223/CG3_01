@@ -478,10 +478,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		instancingData[index].color = Vector4{ 1.0f,1.0f,1.0f,1.0f };
 	}
 
-	Particle particles[kNumMaxInstance];
+	//Particle particles[kNumMaxInstance];
+	std::list<Particle> particles;
 	for (uint32_t index = 0; index < kNumMaxInstance; index++)
 	{
-		particles[index] = MakeNewParticle(randomEngine);
+		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine));
+		particles.push_back(MakeNewParticle(randomEngine));
+
 	}
 
 
@@ -717,39 +721,58 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			billboardMatrix.m[3][1] = 0.0f;
 			billboardMatrix.m[3][2] = 0.0f;
 
-			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 
-				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
-				Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
-				Matrix4x4 rotateMatrix = MakeRotateMatrix(particles[index].transform.rotate);
 
-				Matrix4x4 worldMatrix2 = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			for (auto particleIterator = particles.begin(); particleIterator != particles.end();) {
+				// パーティクルのデータ取得
+				Particle& particle = *particleIterator;
+
+				// 各種変換行列の生成
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particle.transform.scale);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix(particle.transform.translate);
+				Matrix4x4 rotateMatrix = MakeRotateMatrix(particle.transform.rotate);
+
+				Matrix4x4 worldMatrix2 = MakeAffineMatrix(
+					particle.transform.scale,
+					particle.transform.rotate,
+					particle.transform.translate
+				);
 
 				if (useBillboard) {
 					worldMatrix2 = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
 				}
-				else
-				{
+				else {
 					worldMatrix2 = Multiply(scaleMatrix, translateMatrix);
 				}
 
 				Matrix4x4 worldViewProjectionMatrix2 = Multiply(worldMatrix2, ViewProjectionMatrix);
 
-				if (particles[index].lifeTime <= particles[index].currentTime) {
+				// パーティクルの寿命確認
+				if (particle.lifeTime <= particle.currentTime) {
+					particleIterator = particles.erase(particleIterator); // 寿命切れのパーティクルを削除
 					continue;
 				}
 
-				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+				// アルファ値の計算
+				float alpha = 1.0f - (particle.currentTime / particle.lifeTime);
 
-				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
-				particles[index].currentTime += kDeltaTime; // 経過時間を足す
-				instancingData[numInstance].WVP = worldViewProjectionMatrix2;
-				instancingData[numInstance].world = worldMatrix2;
-				instancingData[numInstance].color = particles[index].color;
-				instancingData[numInstance].color.w = alpha;
+				// パーティクルの更新
+				particle.transform.translate += particle.velocity * kDeltaTime;
+				particle.currentTime += kDeltaTime;
 
-				++numInstance;// 生きているParticleの数を1つカウントする
+				// インスタンシングデータの設定
+				if (numInstance < kNumMaxInstance) {
+					instancingData[numInstance].WVP = worldViewProjectionMatrix2;
+					instancingData[numInstance].world = worldMatrix2;
+					instancingData[numInstance].color = particle.color;
+					instancingData[numInstance].color.w = alpha;
+
+					++numInstance; // 生きているパーティクルをカウント
+				}
+
+				++particleIterator;
 			}
+
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
@@ -760,8 +783,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Ball Controls");
-			ImGui::SliderFloat3("ParticleX", &particles->transform.rotate.x, -5.0f, 5.0f);
-			ImGui::SliderFloat3("ParticleY", &particles->transform.rotate.y, -180.0f, 180.0f);
+			if (ImGui::Button("Add Particle"))
+			{
+				particles.push_back(MakeNewParticle(randomEngine));
+				particles.push_back(MakeNewParticle(randomEngine));
+				particles.push_back(MakeNewParticle(randomEngine));
+			}
+
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 
 			ImGui::Checkbox("useUVTexture", &useMonsterBall);
