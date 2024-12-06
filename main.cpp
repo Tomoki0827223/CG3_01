@@ -675,7 +675,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			// GE3
 			input->Update();
-
 			// ゲーム処理
 
 			// 描画前処理
