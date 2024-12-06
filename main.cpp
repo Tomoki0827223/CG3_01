@@ -226,9 +226,9 @@ ModelData LoaObjFile(const std::string& directoryPath, const std::string& filena
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
-	std::uniform_real_distribution<float> distribution(-0.2f, 0.2f);
+	std::uniform_real_distribution<float> distribution(-0.5f, 0.5f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
-	std::uniform_real_distribution<float> destTime(1.0f, 8.0f);
+	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
 	
 	Particle particle;
 	
@@ -295,7 +295,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing;
 	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRangeForInstancing);
-	
+
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
@@ -365,7 +365,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask =
 		D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = true;
-	
+
 	////通常
 	//blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	//blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
@@ -375,7 +375,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	
+
 
 	//変更しないもの
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
@@ -419,7 +419,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	/*graphicsPinpelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),*/
 	graphicsPinpelineStateDesc.VS = { vertexParticleShaderBlob->GetBufferPointer(),
 		vertexParticleShaderBlob->GetBufferSize() };
-		vertexShaderBlob->GetBufferSize();
+	vertexShaderBlob->GetBufferSize();
 	graphicsPinpelineStateDesc.PS = { pixelShaderParticleBlob->GetBufferPointer(),pixelShaderParticleBlob->GetBufferSize() };
 	graphicsPinpelineStateDesc.BlendState = blendDesc;
 	graphicsPinpelineStateDesc.RasterizerState = rasterizerDesc;
@@ -463,8 +463,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//パーティクル最大数
 	const uint32_t kNumMaxInstance = 50;
-	
-	
+
+
 	//Material用のResourceを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource = dxCommon->CreateBufferResource(sizeof(ParticleForGPU) * kNumMaxInstance);
 	ParticleForGPU* instancingData = nullptr;
@@ -487,7 +487,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//bool useUpdate = false;
 	bool useMonsterBall = false;
-	
+
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	TransformVector3 transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
@@ -497,7 +497,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//モデル読み込み
 	//ModelData modelData = LoaObjFile("resources", "Bunny.obj");
 	ModelData modelData = LoaObjFile("resources", "plane.obj");
-	
+
 	//頂点リソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
 	//頂点バッファビューを作成する
@@ -509,7 +509,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));// 書き込むためのアドレスを取得
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());// 頂点データをリソースにコピー
 
 	//DepthStencilTextureを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = dxCommon->CreateDepthStencilTextureResource(dxCommon->GetDevice(), WinApp::kClientWidth, WinApp::kClientHeight);
@@ -601,8 +601,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TransformVector3 cameraTransform
 	{
 		{1.0f,1.0f,1.0f},
-		{std::numbers::pi_v<float> / 4.0f,std::numbers::pi_v<float> , 0.0f},
-		{0.0f,5.0f,5.0f}
+		{std::numbers::pi_v<float> / 3.0f,std::numbers::pi_v<float> , 0.0f},
+		{0.0f,10.0f,5.0f}
 	};
 
 	//TransformVector3 cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
@@ -655,7 +655,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-	
+
 	//SRVを作成するDescriptorHeapの場所を決める
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetSRVDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxCommon->GetSRVDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
@@ -689,35 +689,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 描画前処理
 			dxCommon->PreDraw();
 
-
 			transform.rotate.y += 0.0f;
+			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(winApp_->kClientWidth) / float(winApp_->kClientHeight), 0.1f, 100.0f);
-			
-			//Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-
-			Matrix4x4 billboardMatrix = MakeIdentity4x4();
-			billboardMatrix.m[3][0] = 0.0f;
-			billboardMatrix.m[3][1] = 0.0f;
-			billboardMatrix.m[3][2] = 0.0f;
-
-			Matrix4x4 translationMatrix = MakeTranslateMatrix(transform.translate);
-			Matrix4x4 ScaleMatrix = MakeScaleMatrix(transform.scale);
-			
-			
-			Matrix4x4 worldMatrix = ScaleMatrix * billboardMatrix * translationMatrix;
-
-
-			//Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-			//wvpDeta->world = worldMatrix;
-			//wvpDeta->WVP = worldViewProjectionMatrix;
-
-			//Matrix4x4 worldMatrix = Multiply(ScaleMatrix, Multiply(billboardMatrix, translationMatrix));
-			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, projectionMatrix);
+			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			wvpDeta->world = worldMatrix;
 			wvpDeta->WVP = worldViewProjectionMatrix;
-
 
 			// Sprite用のWorldViewProjectionMatrixを作る
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
@@ -727,47 +706,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			transformationMatrixDataSprite->world = worldMatrixSprite;
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 
+			Matrix4x4 ViewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 
-			//スプライト
-			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-			materialDataSprite->uvTransform = uvTransformMatrix;
+			const float kDeltaTime = 1.0f / 60.0f;
+			uint32_t numInstance = 0;// 描画すべきインスタンス数
+			Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+			Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
 
-			uint32_t numInstance = 0; // 描画すべきインスタンス数
+			billboardMatrix.m[3][0] = 0.0f;
+			billboardMatrix.m[3][1] = 0.0f;
+			billboardMatrix.m[3][2] = 0.0f;
 
 			for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
-				if (particles[index].lifeTime <= particles[index].currentTime) { // 生存期間を過ぎていたら更新せず描画対象にしない
+
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translate);
+				Matrix4x4 rotateMatrix = MakeRotateMatrix(particles[index].transform.rotate);
+
+				Matrix4x4 worldMatrix2 = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+				if (useBillboard) {
+					worldMatrix2 = Multiply(Multiply(scaleMatrix, billboardMatrix), translateMatrix);
+				}
+				else
+				{
+					worldMatrix2 = Multiply(scaleMatrix, translateMatrix);
+				}
+
+				Matrix4x4 worldViewProjectionMatrix2 = Multiply(worldMatrix2, ViewProjectionMatrix);
+
+				if (particles[index].lifeTime <= particles[index].currentTime) {
 					continue;
 				}
 
-				// ワールド行列を作成
-
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 
-				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
-				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
-				//instancingData[index].WVP = worldViewProjectionMatrix,
-				//instancingData[index].world = worldMatrix;
-				//instancingData[index].color = particles[index].color;
-				
-				particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
-				particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
-				particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
+				particles[index].transform.translate += particles[index].velocity * kDeltaTime;
 				particles[index].currentTime += kDeltaTime; // 経過時間を足す
-				
-				instancingData[numInstance].WVP = worldViewProjectionMatrix; 
-				instancingData[numInstance].world = worldMatrix;
+				instancingData[numInstance].WVP = worldViewProjectionMatrix2;
+				instancingData[numInstance].world = worldMatrix2;
 				instancingData[numInstance].color = particles[index].color;
 				instancingData[numInstance].color.w = alpha;
-				
-				++numInstance; // 生きているParticleの数を1つカウントする
 
-                particles[index].transform.translate += Vector3(particles[index].velocity.x * kDeltaTime, particles[index].velocity.y * kDeltaTime, particles[index].velocity.z * kDeltaTime);
-
+				++numInstance;// 生きているParticleの数を1つカウントする
 			}
-
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
@@ -786,16 +768,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Checkbox("Billboard", &useBillboard);
 
-			if (useBillboard) {
-				Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
-				billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
-				billboardMatrix.m[3][0] = 0.0f;
-				billboardMatrix.m[3][1] = 0.0f;
-				billboardMatrix.m[3][2] = 0.0f;
-			}
-
-
-
 			ImGui::End();
 			// 他の描画処理が完了した後に ImGui 描画を行う
 			ImGui::Render();
@@ -803,7 +775,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			dxCommon->InitializeViewportAndScissorRect();
 			dxCommon->InitializeScissorRect();
-
 
 			//RootSignatureを設定。PSOに設定しているけど別途設定が必要
 			dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());

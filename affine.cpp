@@ -148,6 +148,40 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	return ans;
 }
 
+Matrix4x4 MakeRotateMatrix(const Vector3& rotate) {
+
+	// X軸回転
+	float cosX = std::cos(rotate.x);
+	float sinX = std::sin(rotate.x);
+	Matrix4x4 rotateX;
+	rotateX.m[1][1] = cosX;
+	rotateX.m[1][2] = -sinX;
+	rotateX.m[2][1] = sinX;
+	rotateX.m[2][2] = cosX;
+
+	// Y軸回転
+	float cosY = std::cos(rotate.y);
+	float sinY = std::sin(rotate.y);
+	Matrix4x4 rotateY;
+	rotateY.m[0][0] = cosY;
+	rotateY.m[0][2] = sinY;
+	rotateY.m[2][0] = -sinY;
+	rotateY.m[2][2] = cosY;
+
+	// Z軸回転
+	float cosZ = std::cos(rotate.z);
+	float sinZ = std::sin(rotate.z);
+	Matrix4x4 rotateZ;
+	rotateZ.m[0][0] = cosZ;
+	rotateZ.m[0][1] = -sinZ;
+	rotateZ.m[1][0] = sinZ;
+	rotateZ.m[1][1] = cosZ;
+
+	// 回転行列を結合（Z -> Y -> X の順）
+	Matrix4x4 rotateMatrix = Multiply(rotateZ, Multiply(rotateY, rotateX));
+
+	return rotateMatrix;
+}
 
 Matrix4x4 Add(const Matrix4x4& mt1, const Matrix4x4& mt2) {
 

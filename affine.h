@@ -21,6 +21,7 @@ Matrix4x4 MakeRotateYMatrix(float radian);
 
 Matrix4x4 MakeRotateZMatrix(float radian);
 
+Matrix4x4 MakeRotateMatrix(const Vector3& rotate);
 
 Matrix4x4 Add(const Matrix4x4& mt1, const Matrix4x4& mt2);
 
