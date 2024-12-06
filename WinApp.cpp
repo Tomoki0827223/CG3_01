@@ -42,7 +42,7 @@ void WinApp::Initialize()
 
     hwnd = CreateWindow(
         wc.lpszClassName,
-        L"CG2",
+        L"LE2D_19_ムラタ_トモキ",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,

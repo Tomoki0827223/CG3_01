@@ -741,6 +741,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			}
 
+
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
@@ -754,7 +755,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("ParticleY", &particles->transform.rotate.y, -180.0f, 180.0f);
 			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 
-			ImGui::Checkbox("useMonsterball", &useMonsterBall);
+			ImGui::Checkbox("useUVTexture", &useMonsterBall);
 
 			ImGui::End();
 			// 他の描画処理が完了した後に ImGui 描画を行う
