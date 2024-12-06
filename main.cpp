@@ -15,10 +15,11 @@
 #include <cassert>
 #include <vector>
 #include <string>
+#include <random>
+#include <numbers>
 #include "affine.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
-#include <random>
 
 #pragma region 単位行列とTransform
 // 単位行列の作成
@@ -384,7 +385,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 
 	//裏面表示しない
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	//三角形の中を塗りつぶす
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
@@ -483,6 +484,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles[index] = MakeNewParticle(randomEngine);
 	}
 
+
 	//bool useUpdate = false;
 	bool useMonsterBall = false;
 	
@@ -490,11 +492,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	TransformVector3 transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 
-	//Resourcef
-	//const uint32_t kSubdivision = 36;
-
-	//VertexResourceを生成
-	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+	Matrix4x4 backToFontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
 
 	//モデル読み込み
 	//ModelData modelData = LoaObjFile("resources", "Bunny.obj");
@@ -599,8 +597,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	TransformVector3 transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	TransformVector3 cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	//TransformVector3 cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
+	//Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 
 	dxCommon->GetCPUDescriptorHandle(dxCommon->GetRTVDescriptorHeap(), dxCommon->GetDescriptorSizeRTV(), 0);
 
@@ -660,6 +658,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVの生成
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
+
+	TransformVector3 cameraTransform
+	{
+		{1.0f,1.0f,1.0f},
+		{std::numbers::pi_v<float> / 4.0f,std::numbers::pi_v<float> , 0.0f},
+		{0.0f,23.0f,10.0f}
+	};
+
+	bool useBillboard = false;
+
 	MSG msg{};
 
 	dxCommon->InitializeImGui();
@@ -683,10 +691,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			transform.rotate.y += 0.0f;
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(winApp_->kClientWidth) / float(winApp_->kClientHeight), 0.1f, 100.0f);
+			
+			//Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+
+			Matrix4x4 billboardMatrix = MakeIdentity4x4();
+			billboardMatrix.m[3][0] = 0.0f;
+			billboardMatrix.m[3][1] = 0.0f;
+			billboardMatrix.m[3][2] = 0.0f;
+
+			Matrix4x4 translationMatrix = MakeTranslateMatrix(transform.translate);
+			Matrix4x4 ScaleMatrix = MakeScaleMatrix(transform.scale);
+			
+			Matrix4x4 worldMatrix = ScaleMatrix * billboardMatrix * translationMatrix;
+			//Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			//wvpDeta->world = worldMatrix;
+			//wvpDeta->WVP = worldViewProjectionMatrix;
+
+			//Matrix4x4 worldMatrix = Multiply(ScaleMatrix, Multiply(billboardMatrix, translationMatrix));
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			wvpDeta->world = worldMatrix;
 			wvpDeta->WVP = worldViewProjectionMatrix;
@@ -757,12 +781,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			ImGui::Checkbox("useUVTexture", &useMonsterBall);
 
+			ImGui::Checkbox("Billboard", &useBillboard);
+
+			if (useBillboard) {
+				Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+				billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+				billboardMatrix.m[3][0] = 0.0f;
+				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
+			}
+
+
+
 			ImGui::End();
 			// 他の描画処理が完了した後に ImGui 描画を行う
 			ImGui::Render();
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
-
-
 
 			dxCommon->InitializeViewportAndScissorRect();
 			dxCommon->InitializeScissorRect();
@@ -800,15 +834,5 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete winApp_;
 	delete dxCommon;
 
-
-	//ImGui_ImplDX12_Shutdown();
-	//ImGui_ImplWin32_Shutdown();
-	//ImGui::DestroyContext();
-
-
-	//CloseHandle(fenceEvent);
-	//CloseWindow(hwnd);
-
-	//CoUninitialize();
 	return 0;
 }

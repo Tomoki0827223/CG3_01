@@ -47,3 +47,11 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 void DrawSphere(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color);
+
+Matrix4x4 CreateTranslationMatrix(float translateX, float translateY, float translateZ);
+
+// 拡大行列を生成する関数 
+Matrix4x4 CreateScalingMatrix(float scaleX, float scaleY, float scaleZ);
+
+// 掛け算が必要
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);

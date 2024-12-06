@@ -434,3 +434,32 @@ void DrawSphere(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewport
 		}
 	}
 }
+
+// 平行移動行列を生成する関数
+Matrix4x4 CreateTranslationMatrix(float translateX, float translateY, float translateZ) {
+	Matrix4x4 translationMatrix = {};
+	translationMatrix.m[0][0] = 1.0f;
+	translationMatrix.m[1][1] = 1.0f;
+	translationMatrix.m[2][2] = 1.0f;
+	translationMatrix.m[3][3] = 1.0f;
+	translationMatrix.m[3][0] = translateX;
+	translationMatrix.m[3][1] = translateY;
+	translationMatrix.m[3][2] = translateZ;
+	return translationMatrix;
+}
+
+// 拡大行列を生成する関数 
+Matrix4x4 CreateScalingMatrix(float scaleX, float scaleY, float scaleZ) {
+	Matrix4x4 scalingMatrix = {};
+	scalingMatrix.m[0][0] = scaleX;
+	scalingMatrix.m[1][1] = scaleY;
+	scalingMatrix.m[2][2] = scaleZ;
+	scalingMatrix.m[3][3] = 1.0f;
+
+	return scalingMatrix;
+}
+
+// 掛け算が必要
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
+	return Multiply(m1, m2);
+}
