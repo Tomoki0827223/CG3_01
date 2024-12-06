@@ -226,7 +226,7 @@ ModelData LoaObjFile(const std::string& directoryPath, const std::string& filena
 
 Particle MakeNewParticle(std::mt19937& randomEngine)
 {
-	std::uniform_real_distribution<float> distribution(-2.0f, 1.0f);
+	std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 	std::uniform_real_distribution<float> distColor(0.0f, 1.0f);
 	std::uniform_real_distribution<float> destTime(1.0f, 3.0f);
 	
