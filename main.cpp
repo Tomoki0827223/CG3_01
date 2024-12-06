@@ -597,6 +597,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	TransformVector3 transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+	TransformVector3 cameraTransform
+	{
+		{1.0f,1.0f,1.0f},
+		{std::numbers::pi_v<float> / 4.0f,std::numbers::pi_v<float> , 0.0f},
+		{0.0f,5.0f,5.0f}
+	};
+
 	//TransformVector3 cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	//Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 
@@ -658,14 +666,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//SRVの生成
 	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 
-
-	TransformVector3 cameraTransform
-	{
-		{1.0f,1.0f,1.0f},
-		{std::numbers::pi_v<float> / 4.0f,std::numbers::pi_v<float> , 0.0f},
-		{0.0f,23.0f,10.0f}
-	};
-
 	bool useBillboard = false;
 
 	MSG msg{};
@@ -705,13 +705,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 translationMatrix = MakeTranslateMatrix(transform.translate);
 			Matrix4x4 ScaleMatrix = MakeScaleMatrix(transform.scale);
 			
+			
 			Matrix4x4 worldMatrix = ScaleMatrix * billboardMatrix * translationMatrix;
+
+
 			//Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			//wvpDeta->world = worldMatrix;
 			//wvpDeta->WVP = worldViewProjectionMatrix;
 
 			//Matrix4x4 worldMatrix = Multiply(ScaleMatrix, Multiply(billboardMatrix, translationMatrix));
-			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, projectionMatrix);
 			wvpDeta->world = worldMatrix;
 			wvpDeta->WVP = worldViewProjectionMatrix;
 
