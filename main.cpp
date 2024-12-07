@@ -859,36 +859,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//	particles.push_back(MakeNewParticle(randomEngine));
 			//}
 
-			// ImGuiウィンドウの作成
-			ImGui::Begin("Ball Controls");
-
-			if (ImGui::Button("Add Particle"))
-			{
-				particles.splice(particles.end(), Emit(emitter, randomEngine));
-			}
+			// 最初のウィンドウ
+			ImGui::Begin("Particle Controls");
 			ImGui::ColorEdit4("Particle Color", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
-			ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
-
-			//ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
 			ImGui::Checkbox("useUVTexture", &useMonsterBall);
 			ImGui::Checkbox("Billboard", &useBillboard);
-
-			// 風の有効/無効を切り替えるチェックボックス
-			//ImGui::Checkbox("Enable Wind", &useWind);
-
-			// 風の加速度を調整するスライダー
 			ImGui::DragFloat3("Wind Acceleration", &acclerationField.accleration.x, 0.1f, -10.0f, 10.0f);
-
-			// ボタンで風の強さを変更
-			if (ImGui::Button("+accleration")) {
-				acclerationField.accleration.x += 2.0f;
-			}
-			if (ImGui::Button("-accleration")) {
-				acclerationField.accleration.x -= 2.0f;
-			}
-
+			if (ImGui::Button("Strength of Wind +X")) { acclerationField.accleration.x += 2.0f; }
+			if (ImGui::Button("Strength of Wind -X")) { acclerationField.accleration.x -= 2.0f; }
+			if (ImGui::Button("Strength of Wind +Y")) { acclerationField.accleration.y += 2.0f; }
+			if (ImGui::Button("Strength of Wind -Y")) { acclerationField.accleration.y -= 2.0f; }
+			if (ImGui::Button("Strength of Wind +Z")) { acclerationField.accleration.z += 2.0f; }
+			if (ImGui::Button("Strength of Wind -Z")) { acclerationField.accleration.z -= 2.0f; }
 			ImGui::End();
-			// 他の描画処理が完了した後に ImGui 描画を行う
+
+
+			// 二つ目のウィンドウ
+			ImGui::Begin("Emitter Controls");
+			ImGui::DragFloat3("Emitter Translate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+			if (ImGui::Button("ParticlePosition +X")) { emitter.transform.translate.x += 2.0f; }
+			if (ImGui::Button("ParticlePosition -X")) { emitter.transform.translate.x -= 2.0f; }
+			if (ImGui::Button("ParticlePosition +Y")) { emitter.transform.translate.y += 2.0f; }
+			if (ImGui::Button("ParticlePosition -Y")) { emitter.transform.translate.y -= 2.0f; }
+			if (ImGui::Button("ParticlePosition +Z")) { emitter.transform.translate.z += 2.0f; }
+			if (ImGui::Button("ParticlePosition -Z")) { emitter.transform.translate.z -= 2.0f; }
+			ImGui::End();
+
 			ImGui::Render();
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 
